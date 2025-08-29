@@ -61,6 +61,18 @@ export const clientsCollection = createCollection(
 - Support for CRUD operations with Effect generators
 - Concurrent operations with Effect.all
 
+## Manual Data Population
+
+For scenarios where you need to manually populate data (e.g., from a sync engine), you can use the `insertManually(data)` method:
+
+```typescript
+// Manually insert data from external sources
+const syncedData = await syncEngine.fetchData()
+await collection.insertManually(syncedData)
+```
+
+This is useful when integrating with external data sources or synchronization engines that provide data outside the normal collection flow.
+
 ## Known Limitations
 
 - **Data fetching is incomplete** - missing refetch option
