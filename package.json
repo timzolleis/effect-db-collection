@@ -1,0 +1,17 @@
+{
+  "name": "effect-db-collection",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.15.0",
+  "dependencies": {
+    "@tanstack/react-db": "^0.1.9",
+    "effect": "^3.17.9"
+  }
+}
