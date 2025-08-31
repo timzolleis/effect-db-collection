@@ -1,3 +1,3 @@
 export interface RefetchResponse {
-    refetch: boolean
+  refetch: boolean
 }
