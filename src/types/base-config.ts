@@ -1,7 +1,7 @@
-import {Effect, ManagedRuntime} from 'effect'
+import {Effect} from "effect";
 
-export interface BaseCollectionConfig<TItem extends object, TRuntime extends ManagedRuntime.ManagedRuntime<any, any>> {
-  getKey: (item: TItem) => string | number
-  id: string
-  effect: Effect.Effect<Array<TItem>, unknown, ManagedRuntime.ManagedRuntime.Context<TRuntime>>
+export interface BaseCollectionConfig<TItem extends object, TRuntimeContext> {
+    getKey: (item: TItem) => string | number
+    id: string
+    effect: Effect.Effect<Array<TItem>, unknown, TRuntimeContext>
 }
