@@ -42,7 +42,7 @@ export const sendTransaction = <TItem extends object, TRuntimeContext>({
 
     if (Array.isArray(serverResponse)) {
       //Handle updates
-      Effect.all(
+      yield* Effect.all(
         [...updateTransactions, ...insertTransactions].map((item) =>
           collectionService.write({ type: 'delete', value: item.modified })
         )
