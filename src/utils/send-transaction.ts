@@ -1,10 +1,5 @@
-import { Effect, Option, Ref } from 'effect'
-import type {
-  Collection,
-  DeleteMutationFnParams,
-  InsertMutationFnParams,
-  UpdateMutationFnParams
-} from '@tanstack/react-db'
+import { Effect } from 'effect'
+import type { DeleteMutationFnParams, InsertMutationFnParams, UpdateMutationFnParams } from '@tanstack/react-db'
 import { BaseCollectionConfig } from '../types/base-config'
 import { RefetchResponse } from '../types/refetch-response'
 import { CollectionHandlerError } from '../local/errors'
@@ -30,33 +25,36 @@ export const sendTransaction = <TItem extends object, TRuntimeContext>({
     )
 
     const collectionService = yield* CollectionService
-    yield* collectionService.begin
 
-    // Remove deleted items from collection
-    const deleteTransactions = params.transaction.mutations.filter((m) => m.type === 'delete')
+    const deleteTransactions = params.transaction.mutations.filter((mutation) => mutation.type === 'delete')
+    const updateTransactions = params.transaction.mutations.filter((mutation) => mutation.type === 'update')
+    const insertTransactions = params.transaction.mutations.filter((mutation) => mutation.type === 'insert')
+
+    yield* collectionService.begin
+    //Delete transactions need to be deleted, no matter what happens
     yield* Effect.all(
       deleteTransactions.map((transaction) => collectionService.write({ value: transaction.modified, type: 'delete' }))
     )
-
     if (!serverResponse) {
-      yield* collectionService.commit
-      yield* Effect.logDebug(`[sendTransaction]: No data returned from server handler`)
-      return
+      yield* Effect.logDebug('[sendTransaction]: No response from handler')
+      return yield* collectionService.commit
     }
 
     if (Array.isArray(serverResponse)) {
-      // Update collection with server data
-      const itemsToRemove = params.transaction.mutations.filter((m) => m.type !== 'delete').map((m) => m.modified)
-
-      yield* Effect.all(itemsToRemove.map((item) => collectionService.write({ type: 'delete', value: item })))
+      //Handle updates
+      Effect.all(
+        [...updateTransactions, ...insertTransactions].map((item) =>
+          collectionService.write({ type: 'delete', value: item.modified })
+        )
+      )
       yield* Effect.all(serverResponse.map((item) => collectionService.write({ type: 'insert', value: item })))
 
       yield* collectionService.commit
     } else {
       yield* collectionService.commit
-
       const { refetch } = serverResponse
       if (!refetch) {
+        //TODO: Check if we should preserve optimistic keys in this case - Tim, 09/04/25
         yield* Effect.logDebug(`[sendTransaction]: Refetch disabled, optimistic keys removed`)
         return
       }
